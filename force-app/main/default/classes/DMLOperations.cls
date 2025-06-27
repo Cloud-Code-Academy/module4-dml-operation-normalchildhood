@@ -66,8 +66,8 @@ public with sharing class DMLOperations {
         // Create a new Contact instance
         Contact cont = new Contact ();
         // Set some fields on the Contact
-        cont.FirstName = '';
-        cont.LastName = '';
+        cont.FirstName = 'John';
+        cont.LastName = 'Smith';
         cont.AccountId = accountId; // Set the AccountId field to the given accountId
 
         // Insert the Contact into the database
@@ -85,11 +85,13 @@ public with sharing class DMLOperations {
      */
     public static void updateContactLastName(Id contactId, String newLastName) {
         // Retrieve the Contact from the database
+        Contact cont = [SELECT Id FROM Contact WHERE id = :contactId];
         // [SELECT Id FROM Contact WHERE Id = :contactId]
 
         // Update the Contact's last name
-
+        cont.LastName = newLastName;
         // Update the Contact in the database
+        update cont;
     }
 
     /**
@@ -101,11 +103,13 @@ public with sharing class DMLOperations {
      */
     public static void updateOpportunityStage(Id oppId, String newStage) {
         // Retrieve the Opportunity from the database
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Id = :oppId];
         // [SELECT Id FROM Opportunity WHERE Id = :oppId]
 
         // Update the Opportunity's stage
-
+        opp.Stage = newStage;
         // Update the Opportunity in the database
+        update opp;
     }
 
     /**
