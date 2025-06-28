@@ -148,7 +148,7 @@ public with sharing class DMLOperations {
             opp.Stage = Qualification;
             opp.CloseDate = ADDMONTHS(TODAY(),3);
             opp.Amount = 50000;
-            opp.add(oppsToUpdate);
+            oppsToUpdate.add(opp);
         }
         upsert oppsToUpdate;
     }
@@ -167,13 +167,23 @@ public with sharing class DMLOperations {
         List<Opportunity> oppsToUpsert = new List<Opportunity>();
         Account acct = new Account(Name = accountName);
         upsert acct;
-        Map<String, Id> acctNameToId = new Map<String, Id>();
-        acctNameToId.put(acct.Name, acct.Id);
+        Set<String> oppNameSet = new Set<String>(oppNames);
+        Map<String, Opportunity> existingOpps = new Map<String, OpportunityId>(
+            [SELECT Id, Name FROM Opportunity WHERE Name In :oppNameSet AND AccountId = :acct.id]);
         // Loop through each Opportunity name
-        for (Opportunity opp : oppNames) {
-            opp.AccountId = acctNameToId.get(acct.Name);
-            opp.Name = accountName;
-            opp.add(oppsToUpsert);
+        for (String oppName : oppNames) {
+            Opportunity opp;
+            if (existingOpps.containsKey(oppName)) {
+                opp = existingOpps.get(oppName);
+            }
+            else {
+                opp = new Opportunity();
+                opp.Name = oppName;
+                opp.CloseDate = TODAY();
+                opp.Stage = 'Prospecting';
+                opp.AccountId = acct.Id;
+            }
+            oppsToUpsert.add(opp);
         }
             // Create an Opportunity with the given name
             // Add the Opportunity to the list
