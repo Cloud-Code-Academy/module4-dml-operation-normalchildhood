@@ -66,8 +66,8 @@ public with sharing class DMLOperations {
         // Create a new Contact instance
         Contact cont = new Contact ();
         // Set some fields on the Contact
-        cont.FirstName = 'John';
-        cont.LastName = 'Smith';
+        cont.FirstName = '';
+        cont.LastName = '';
         cont.AccountId = accountId; // Set the AccountId field to the given accountId
 
         // Insert the Contact into the database
@@ -87,7 +87,6 @@ public with sharing class DMLOperations {
         // Retrieve the Contact from the database
         Contact cont = [SELECT Id FROM Contact WHERE id = :contactId];
         // [SELECT Id FROM Contact WHERE Id = :contactId]
-
         // Update the Contact's last name
         cont.LastName = newLastName;
         // Update the Contact in the database
@@ -105,7 +104,6 @@ public with sharing class DMLOperations {
         // Retrieve the Opportunity from the database
         Opportunity opp = [SELECT Id FROM Opportunity WHERE Id = :oppId];
         // [SELECT Id FROM Opportunity WHERE Id = :oppId]
-
         // Update the Opportunity's stage
         opp.Stage = newStage;
         // Update the Opportunity in the database
@@ -140,6 +138,11 @@ public with sharing class DMLOperations {
      * @param list of Opportunities to be changed then upserted.
      */
     public static void upsertOpportunityList(List<Opportunity> opportunities) {
+        // Loop through each Opportunity in the list
+            // Set the Opportunity's Stage to Qualification
+            // Set the Opportunity's Close Date to 3 months from today
+            // Set the Opportunity's Amount to 50000
+        // Upsert the opportunities List so that records are either updated or created
         List<Opportunity> oppsToUpdate = new List<Opportunity>();
         for (Opportunity opp : opportunities){
             opp.Stage = Qualification;
@@ -147,11 +150,6 @@ public with sharing class DMLOperations {
             opp.Amount = 50000;
             opp.add(oppsToUpdate);
         }
-        // Loop through each Opportunity in the list
-            // Set the Opportunity's Stage to Qualification
-            // Set the Opportunity's Close Date to 3 months from today
-            // Set the Opportunity's Amount to 50000
-        // Upsert the opportunities List so that records are either updated or created
         upsert oppsToUpdate;
     }
 
@@ -166,9 +164,20 @@ public with sharing class DMLOperations {
      * @param oppNames The list of Opportunity names.
      */
     public static void upsertOpportunities(String accountName, List<String> oppNames) {
+        List<Opportunity> oppsToUpsert = new List<Opportunity>();
+        Account acct = new Account(Name = accountName);
+        upsert acct;
+        Map<String, Id> acctNameToId = new Map<String, Id>();
+        acctNameToId.put(acct.Name, acct.Id);
         // Loop through each Opportunity name
+        for (Opportunity opp : oppNames) {
+            opp.AccountId = acctNameToId.get(acct.Name);
+            opp.Name = accountName;
+            opp.add(oppsToUpsert);
+        }
             // Create an Opportunity with the given name
             // Add the Opportunity to the list
+            upsert oppsToUpsert;
     }
     
     /**
