@@ -225,10 +225,14 @@ public with sharing class DMLOperations {
 	 * @param contactsToUpsert List of Contacts to be upserted and linked to accounts.
 	 */
 	public static void upsertAccountsWithContacts(List<Contact> contactsToUpsert) {
+        List<Contact> contactList = [SELECT Id, LastName FROM Contact WHERE (SELECT Name FROM Account) = LastName];
+        List<Contact> contactsToUpsert = new List<Contact>();
 		// Loop through each Contact
-
+        for (Contact cont : contactList) {
+            cont.Account.Name = cont.LastName;
+        }
 		// Extract the Account Name from Contact's LastName
-
+        
 		// Get the account based on the name or create one if it doesn't exist
 
 		// Link the Contact to its Account using the Account Id
@@ -242,11 +246,16 @@ public with sharing class DMLOperations {
      * @param leadNames The list of Lead names to be inserted.
      */
     public static void insertAndDeleteLeads(List<String> leadNames) {
+        List<Lead>leadList = new List<Lead>();
         // Loop through each Lead name
-
-        // Insert the Leads
-
-        // Delete the Leads
+       for (Lead lead : leadNames) {
+        Lead newLead = new Lead();
+        newLead.LastName = leadNames;
+        newLead.Company = leadNames;
+        leadList.add(newLead);
+       }
+       insert leadList; // Insert the Leads
+        delete leadList; // Delete the Leads
     }
 
 
