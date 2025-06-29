@@ -34,8 +34,9 @@ public with sharing class DMLOperations {
         Account acct = new Account ();
         // Set some fields on the Account
         acct.Name = 'Stockdale High School';
+        acct.BillingCountry = 'United States';
         acct.BillingCity = 'Bakersfield';
-        acct.BillingState = 'CA';
+        acct.BillingState = 'California';
         // Insert the Account into the database
         insert acct;
         // Return the Id of the newly created Account
@@ -67,7 +68,7 @@ public with sharing class DMLOperations {
         Contact cont = new Contact ();
         // Set some fields on the Contact
         cont.FirstName = '';
-        cont.LastName = '';
+        cont.LastName = 'Test';
         cont.AccountId = accountId; // Set the AccountId field to the given accountId
 
         // Insert the Contact into the database
@@ -208,11 +209,17 @@ public with sharing class DMLOperations {
             }
         }
 		// otherwise, create a new Account and set the description
-        Account newAcct = new Account(Name = accountName, Description = 'New Account', Id = null);
-        accountsToUpdate.add(newAcct);
+        Account newAcct = new Account(Name = accountName, Description = 'New Account');
+        if (accounts.size() == 0) {
+                accountsToUpdate.add(newAcct);
+        }
 		// Upsert the Account
         upsert accountsToUpdate;
-		return newAcct;
+		if (accounts.size() > 0) {
+        return accounts[0];
+        } else {
+        return newAcct;
+        }
 	}
 
     /**
