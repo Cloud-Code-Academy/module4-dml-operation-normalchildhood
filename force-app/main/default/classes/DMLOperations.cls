@@ -185,8 +185,6 @@ public with sharing class DMLOperations {
             }
             oppsToUpsert.add(opp);
         }
-            // Create an Opportunity with the given name
-            // Add the Opportunity to the list
             upsert oppsToUpsert;
     }
     
@@ -201,13 +199,20 @@ public with sharing class DMLOperations {
 	public static Account upsertAccount(String accountName) {
 		// Query for the Account
 		List<Account> accounts = [SELECT Id FROM Account WHERE Name = :accountName];
-
+        List<Account> accountsToUpdate = new List<Account>();
 		// if the Account exists, update the description
-
+        if (accounts.size() > 0) {
+            for (Account acct : accounts) {
+                acct.Description = 'Updated Account';
+                accountsToUpdate.add(acct);
+            }
+        }
 		// otherwise, create a new Account and set the description
-
+        Account newAcct = new Account(Name = accountName, Description = 'New Account', Id = null);
+        accountsToUpdate.add(newAcct);
 		// Upsert the Account
-		return null;
+        upsert accountsToUpdate;
+		return accountsToUpdate;
 	}
 
     /**
