@@ -102,10 +102,10 @@ public with sharing class DMLOperations {
      */
     public static void updateOpportunityStage(Id oppId, String newStage) {
         // Retrieve the Opportunity from the database
-        Opportunity opp = [SELECT Id FROM Opportunity WHERE Id = :oppId];
+        Opportunity opp = [SELECT Id, StageName FROM Opportunity WHERE Id = :oppId];
         // [SELECT Id FROM Opportunity WHERE Id = :oppId]
         // Update the Opportunity's stage
-        opp.Stage = newStage;
+        opp.StageName = newStage;
         // Update the Opportunity in the database
         update opp;
     }
@@ -145,8 +145,8 @@ public with sharing class DMLOperations {
         // Upsert the opportunities List so that records are either updated or created
         List<Opportunity> oppsToUpdate = new List<Opportunity>();
         for (Opportunity opp : opportunities){
-            opp.Stage = Qualification;
-            opp.CloseDate = ADDMONTHS(TODAY(),3);
+            opp.StageName = 'Qualification';
+            opp.CloseDate = Date.today().addMonths(3);
             opp.Amount = 50000;
             oppsToUpdate.add(opp);
         }
@@ -168,7 +168,7 @@ public with sharing class DMLOperations {
         Account acct = new Account(Name = accountName);
         upsert acct;
         Set<String> oppNameSet = new Set<String>(oppNames);
-        Map<String, Opportunity> existingOpps = new Map<String, OpportunityId>(
+        Map<String, Opportunity> existingOpps = new Map<String, Opportunity>(
             [SELECT Id, Name FROM Opportunity WHERE Name In :oppNameSet AND AccountId = :acct.id]);
         // Loop through each Opportunity name
         for (String oppName : oppNames) {
@@ -179,8 +179,8 @@ public with sharing class DMLOperations {
             else {
                 opp = new Opportunity();
                 opp.Name = oppName;
-                opp.CloseDate = TODAY();
-                opp.Stage = 'Prospecting';
+                opp.CloseDate = Date.today();
+                opp.StageName = 'Prospecting';
                 opp.AccountId = acct.Id;
             }
             oppsToUpsert.add(opp);
@@ -212,7 +212,7 @@ public with sharing class DMLOperations {
         accountsToUpdate.add(newAcct);
 		// Upsert the Account
         upsert accountsToUpdate;
-		return accountsToUpdate;
+		return newAcct;
 	}
 
     /**
@@ -261,10 +261,10 @@ public with sharing class DMLOperations {
     public static void insertAndDeleteLeads(List<String> leadNames) {
         List<Lead>leadList = new List<Lead>();
         // Loop through each Lead name
-       for (Lead lead : leadNames) {
+       for (String lead : leadNames) {
         Lead newLead = new Lead();
-        newLead.LastName = leadNames;
-        newLead.Company = leadNames;
+        newLead.LastName = lead;
+        newLead.Company = lead;
         leadList.add(newLead);
        }
        insert leadList; // Insert the Leads
