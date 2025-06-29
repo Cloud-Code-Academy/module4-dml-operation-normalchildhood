@@ -225,20 +225,33 @@ public with sharing class DMLOperations {
 	 * @param contactsToUpsert List of Contacts to be upserted and linked to accounts.
 	 */
 	public static void upsertAccountsWithContacts(List<Contact> contactsToUpsert) {
-        List<Contact> contactList = [SELECT Id, LastName FROM Contact WHERE (SELECT Name FROM Account) = LastName];
-        List<Contact> contactsToUpsert = new List<Contact>();
-		// Loop through each Contact
-        for (Contact cont : contactList) {
-            cont.Account.Name = cont.LastName;
+
+        Set<String> lastNames = new Set<String>();
+        for (Contact cont : contactsToUpsert) {
+            lastNames.add(cont.LastName);
         }
-		// Extract the Account Name from Contact's LastName
-        
-		// Get the account based on the name or create one if it doesn't exist
+        List<Account> accounts = [SELECT Id, Name FROM Account WHERE Name IN :lastNames]; 
 
-		// Link the Contact to its Account using the Account Id
+        Map<String, Account> nameToAccountMap = new Map<String, Account>();
 
-		// Upsert the Contacts
-	}
+        for (Account acct : accounts) {
+            nameToAccountMap.put(acct.Name, acct);
+        }
+
+        for (Contact cont : contactsToUpsert) {
+            if (nameToAccountMap.containsKey(cont.LastName)){
+                cont.AccountId = nameToAccountMap.get(cont.LastName).Id; 
+            }
+            else {
+                Account acct = upsertAccount(cont.LastName);
+                nameToAccountMap.put(acct.Name, acct);
+                cont.AccountId = acct.Id;
+            }
+            
+        }
+        upsert contactsToUpsert;
+    }
+	
 
     /**
      * Question 11
